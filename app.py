@@ -79,7 +79,38 @@ def handle_hotels():
 
             } for hotel in hotels]
 
+        return jsonify({"count": len(results), "hotels": results})
 
+@app.route('/user/hotels/<hotel_id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_hotel(hotel_id):
+    hotel = HotelsModel.query.get_or_404(hotel_id)
+
+    if request.method == 'GET':
+        response = {
+            "name": hotel.name,
+                "location": hotel.location,
+                "doRecommend": hotel.doRecommend,
+                "rating":hotel.rating,
+                "feedback": hotel.feedback
+
+        }
+        return {"message": "success", "hotel": response}
+
+    elif request.method == 'PUT':
+        data = request.get_json()
+        hotel.name = data['name']
+        hotel.location = data['location']
+        hotel.doRecommend = data['doRecommend']
+        hotel.rating = data['rating']
+        hotel.feedback = data['feedback']
+        db.session.add(hotel)
+        db.session.commit()
+        return {"message": f"Hotel {hotel.name} successfully updated"}
+
+    elif request.method == 'DELETE':
+        db.session.delete(hotel)
+        db.session.commit()
+        return {"message": f"Hotel {hotel.name} successfully deleted."}
 
 if __name__ == '__main__':
     app.run(debug=True)
